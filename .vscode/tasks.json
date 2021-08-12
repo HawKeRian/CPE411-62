@@ -1,11 +1,16 @@
 {
     "command": "dotnet",
-    "isShellCommand": true,
+    //"isShellCommand": true,
     "args": [],
     "tasks": [
         {
-            "taskName": "build",
-            "isBuildCommand": true,
+            "label": "build",
+            "command": "dotnet build",
+            "type": "shell",
+            "group": "build",
+            "presentation": {
+                "reveal": "silent"
+            },
             "problemMatcher": "$msCompile"
         }
     ]

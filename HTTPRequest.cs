@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Collections.Concurrent;
 
 namespace DNWS
 {
@@ -9,7 +10,7 @@ namespace DNWS
   {
     protected String _url;
     protected String _filename;
-    protected static Dictionary<String, String> _propertyListDictionary = null;
+    protected static ConcurrentDictionary<String, String> _propertyListDictionary = null;
     protected static Dictionary<String, String> _requestListDictionary = null;
 
     protected String _body;
@@ -44,7 +45,7 @@ namespace DNWS
     }
     public HTTPRequest(String request)
     {
-      _propertyListDictionary = new Dictionary<String, String>();
+      _propertyListDictionary = new ConcurrentDictionary<String, String>();
       String[] lines = Regex.Split(request, "\\n");
 
       if(lines.Length == 0) {

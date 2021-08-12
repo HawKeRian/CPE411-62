@@ -1,12 +1,12 @@
 {
     "version": "0.2.0",
-    "configurations": [
+    "configurations": [  
         {
             "name": ".NET Core Launch (console)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceRoot}/bin/Debug/netcoreapp2.0/DNWS.dll",
+            "program": "${workspaceRoot}/bin/Debug/net5.0/DNWS.dll",
             "args": [],
             "cwd": "${workspaceRoot}",
             "externalConsole": false,

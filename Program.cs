@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.IO;
 using Microsoft.Extensions.Configuration;
+using System.Threading;
 
 
 namespace DNWS
@@ -236,6 +237,13 @@ namespace DNWS
         }
     }
 
+    //define threading method
+    public enum ThreadType  {
+        Sequential,
+        MultiThread,
+        ThreadPool
+    }
+
     /// <summary>
     /// Main server class, open the socket and wait for client
     /// </summary>
@@ -247,11 +255,14 @@ namespace DNWS
         protected Socket clientSocket;
         private static DotNetWebServer _instance = null;
         protected int id;
+        protected ThreadType _threadType;
 
-        private DotNetWebServer(Program parent)
+        private DotNetWebServer(Program parent, ThreadType threadType, int maxThreadPool)
         {
             _parent = parent;
             id = 0;
+            _threadType = threadType;
+            ThreadPool.SetMaxThreads(maxThreadPool, maxThreadPool);
         }
 
         /// <summary>
@@ -263,9 +274,25 @@ namespace DNWS
         {
             if (_instance == null)
             {
-                _instance = new DotNetWebServer(parent);
+                _instance = new DotNetWebServer(parent,ThreadType.ThreadPool,10);
             }
             return _instance;
+        }
+
+        //Process request (thread pool method)
+        public void ProcessRequestThreadPool(Object stat)
+        {
+            TaskInfo ti = stat as TaskInfo;
+            HTTPProcessor hp = ti.hp;
+            hp.Process();
+        }
+
+        //Process request (multi-thread method)
+        public void ProcessRequestMultiThread(Object stat)
+        {
+            TaskInfo ti = stat as TaskInfo;
+            Thread t = new Thread(() => ti.hp.Process());
+            t.Start();
         }
 
         /// <summary>
@@ -289,7 +316,18 @@ namespace DNWS
                     // Get one, show some info
                     _parent.Log("Client accepted:" + clientSocket.RemoteEndPoint.ToString());
                     HTTPProcessor hp = new HTTPProcessor(clientSocket, _parent);
-                    hp.Process();
+                    //hp.Process();
+                    switch (_threadType){
+                        case ThreadType.Sequential:
+                            hp.Process();
+                            break;
+                        case ThreadType.MultiThread:
+                            ProcessRequestMultiThread(new TaskInfo(hp));
+                            break;
+                        case ThreadType.ThreadPool:
+                            ThreadPool.QueueUserWorkItem(ProcessRequestThreadPool, new TaskInfo(hp));
+                            break;
+                    }
                 }
                 catch (Exception ex)
                 {
